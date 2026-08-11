@@ -31,8 +31,21 @@ def speak(text):
         return
 
     print(
-        f"\nJarvis Speaking: {text}"
+        f"\nAthena Speaking: {text}"
     )
+
+    # Rough pause: ~0.4s per spoken word + buffer so the mic
+    # does not pick up Athena's own voice as a wake word.
+    try:
+
+        from voice.wake_word import pause_wake_word
+
+        word_count = max(len(text.split()), 1)
+
+        pause_wake_word(seconds=0.4 * word_count + 1.5)
+
+    except Exception:
+        pass
 
     try:
 

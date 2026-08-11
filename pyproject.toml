@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "athena"
+version = "0.1.0"
+description = "Local-first Windows AI PC agent"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "Athena" }]
+dependencies = [
+  "requests>=2.32",
+  "pydantic>=2.0",
+  "pydantic-settings>=2.0",
+  "python-dotenv>=1.0",
+  "pyyaml>=6.0",
+  "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+voice = [
+  "openwakeword==0.6.0",
+  "faster-whisper==1.2.1",
+  "piper-tts==1.4.2",
+  "sounddevice==0.5.5",
+]
+gui = ["pillow>=10.0", "pystray>=0.19"]
+
+[project.scripts]
+athena-tray = "ui.tray:main"
+athena-health = "scripts.health_check:main"
+
+[tool.setuptools]
+packages = [
+  "brain",
+  "config",
+  "core",
+  "executor",
+  "gui",
+  "logs",
+  "memory",
+  "monitoring",
+  "openclaw",
+  "permissions",
+  "rag",
+  "security",
+  "tools",
+  "ui",
+  "vision",
+  "voice",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

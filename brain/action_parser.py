@@ -1,6 +1,5 @@
-import json
-
-from brain.ollama_client import ask_jarvis
+from brain.ollama_client import ask_athena
+from brain.planner import extract_json
 from tools.tool_registry import TOOLS
 
 
@@ -9,11 +8,23 @@ def parse_action(user_request):
     available_tools = "\n".join(TOOLS.keys())
 
     prompt = f"""
-You are Jarvis, a desktop AI assistant.
+You are Athena, a desktop AI assistant.
 
 Available tools:
 
 {available_tools}
+
+Tool argument guide:
+- open_application: {{"application_name": "Visual Studio"}}
+- close_application: {{"application_name": "Notepad"}}
+- ingest_document: {{"file_path": "path.pdf"}}
+- query_documents: {{"question": "..."}}
+- list_ingested_documents: {{}}
+- take_screenshot: {{}}
+- read_screen: {{}}
+- click_text: {{"text": "Save"}}
+- type_text: {{"text": "hello"}}
+- press_key: {{"key": "enter"}}
 
 Your job is to convert the user's request into JSON.
 
@@ -25,6 +36,10 @@ Rules:
 - Always return a tool and arguments object.
 - If no arguments are required, return an empty arguments object.
 - Use only the tools listed above.
+- Prefer open_application with a friendly name (never an executable path)
+- Document questions -> query_documents
+- Screen reading -> read_screen
+- UI clicks -> click_text
 
 Examples:
 
@@ -32,31 +47,43 @@ User:
 Open Visual Studio
 
 Response:
-{{"tool":"open_visual_studio","arguments":{{}}}}
+{{"tool":"open_application","arguments":{{"application_name":"Visual Studio"}}}}
 
 User:
 Open Notepad
 
 Response:
-{{"tool":"open_notepad","arguments":{{}}}}
+{{"tool":"open_application","arguments":{{"application_name":"Notepad"}}}}
 
 User:
 Open Calculator
 
 Response:
-{{"tool":"open_calculator","arguments":{{}}}}
+{{"tool":"open_application","arguments":{{"application_name":"Calculator"}}}}
 
 User:
 Open Command Prompt
 
 Response:
-{{"tool":"open_cmd","arguments":{{}}}}
+{{"tool":"open_application","arguments":{{"application_name":"Command Prompt"}}}}
 
 User:
 Open PowerShell
 
 Response:
-{{"tool":"open_powershell","arguments":{{}}}}
+{{"tool":"open_application","arguments":{{"application_name":"Windows PowerShell"}}}}
+
+User:
+Open Docker Desktop
+
+Response:
+{{"tool":"open_application","arguments":{{"application_name":"Docker Desktop"}}}}
+
+User:
+Close Notepad
+
+Response:
+{{"tool":"close_application","arguments":{{"application_name":"Notepad"}}}}
 
 User:
 Create a file called notes.txt
@@ -136,15 +163,63 @@ Put my computer to sleep
 Response:
 {{"tool":"sleep_pc","arguments":{{}}}}
 
+User:
+Ingest the document report.pdf
+
+Response:
+{{"tool":"ingest_document","arguments":{{"file_path":"report.pdf"}}}}
+
+User:
+What does the document say about pricing?
+
+Response:
+{{"tool":"query_documents","arguments":{{"question":"What does the document say about pricing?"}}}}
+
+User:
+Which documents have you read?
+
+Response:
+{{"tool":"list_ingested_documents","arguments":{{}}}}
+
+User:
+Take a screenshot
+
+Response:
+{{"tool":"take_screenshot","arguments":{{}}}}
+
+User:
+Read what is on my screen
+
+Response:
+{{"tool":"read_screen","arguments":{{}}}}
+
+User:
+Click the Save button
+
+Response:
+{{"tool":"click_text","arguments":{{"text":"Save"}}}}
+
+User:
+Type hello world
+
+Response:
+{{"tool":"type_text","arguments":{{"text":"hello world"}}}}
+
+User:
+Press enter
+
+Response:
+{{"tool":"press_key","arguments":{{"key":"enter"}}}}
+
 User Request:
 {user_request}
 """
 
-    response = ask_jarvis(prompt)
+    response = ask_athena(prompt)
 
     try:
 
-        return json.loads(response)
+        action = extract_json(response)
 
     except Exception as e:
 
@@ -154,3 +229,19 @@ User Request:
             "error": f"JSON Parse Error: {e}",
             "raw_response": response
         }
+
+    tool = action.get("tool")
+
+    if tool not in TOOLS:
+
+        return {
+            "tool": None,
+            "arguments": {},
+            "error": f"Unknown tool: {tool}",
+            "raw_response": response
+        }
+
+    if not isinstance(action.get("arguments", {}), dict):
+        action["arguments"] = {}
+
+    return action

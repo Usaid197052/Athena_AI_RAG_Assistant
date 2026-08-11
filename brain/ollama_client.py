@@ -1,13 +1,15 @@
 from ollama import chat
 
+from config import OLLAMA_MODEL
 
-def ask_jarvis(prompt):
+
+def ask_athena(prompt):
     """
     Sends a prompt to Ollama and returns the response.
     """
 
     response = chat(
-        model="qwen3:8b",
+        model=OLLAMA_MODEL,
         messages=[
             {
                 "role": "user",
@@ -17,3 +19,7 @@ def ask_jarvis(prompt):
     )
 
     return response["message"]["content"]
+
+
+# Backward-compatible alias
+ask_jarvis = ask_athena

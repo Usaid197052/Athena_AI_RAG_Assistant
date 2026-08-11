@@ -4,7 +4,7 @@ from executor.action_executor import execute_action
 
 def main():
 
-    print("Jarvis Agent Online")
+    print("Athena Agent Online")
     print("Type 'exit' to quit")
 
     while True:
@@ -20,7 +20,7 @@ def main():
 
         result = execute_action(selected_tool)
 
-        print(f"Jarvis: {result}")
+        print(f"Athena: {result}")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from brain.ollama_client import ask_jarvis
+from brain.ollama_client import ask_athena
 from tools.tool_registry import TOOLS
 
 
@@ -24,6 +24,6 @@ User Request:
 {user_request}
 """
 
-    response = ask_jarvis(prompt)
+    response = ask_athena(prompt)
 
     return response.strip()

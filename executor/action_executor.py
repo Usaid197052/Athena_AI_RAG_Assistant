@@ -1,15 +1,14 @@
-from tools.tool_registry import TOOLS
+from tools.registry import get_registry
 
 
 def execute_action(tool_name, arguments):
+    registry = get_registry()
 
-    if tool_name not in TOOLS:
+    if not registry.has(tool_name):
         return f"Tool '{tool_name}' not found."
 
-    tool_function = TOOLS[tool_name]
-
     try:
-        return tool_function(**arguments)
-
+        result = registry.execute(tool_name, arguments or {})
+        return str(result)
     except Exception as e:
         return f"Execution Error: {e}"

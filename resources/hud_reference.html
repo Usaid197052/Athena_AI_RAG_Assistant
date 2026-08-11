@@ -1,0 +1,385 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .jarvis-wrap {
+    background: #020d1a;
+    min-height: 600px;
+    font-family: 'Rajdhani', sans-serif;
+    color: #7dd6f8;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,200,255,0.4), transparent);
+    animation: scan 4s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scan { 0%{top:-2px} 100%{top:100%} }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid rgba(0,200,255,0.2);
+    position: relative;
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px; font-weight: 900;
+    color: #00d4ff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+  }
+  .logo span { color: #ff6b35; }
+
+  .status-bar {
+    display: flex; gap: 16px; align-items: center;
+    font-size: 11px; color: rgba(125,214,248,0.6);
+    letter-spacing: 1px;
+  }
+
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 6px #00ff88;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .main {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    height: 535px;
+  }
+
+  .sidebar {
+    border-right: 1px solid rgba(0,200,255,0.15);
+    padding: 16px 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    overflow-y: auto;
+  }
+
+  .sidebar-label {
+    font-size: 10px; letter-spacing: 2px;
+    color: rgba(125,214,248,0.4);
+    padding: 4px 8px; margin-bottom: 4px;
+  }
+
+  .cap-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: #7dd6f8; font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+    width: 100%; text-align: left;
+  }
+  .cap-btn:hover, .cap-btn.active {
+    background: rgba(0,200,255,0.08);
+    border-color: rgba(0,200,255,0.4);
+    color: #00d4ff;
+  }
+  .cap-btn i { font-size: 16px; color: rgba(125,214,248,0.6); }
+  .cap-btn.active i { color: #00d4ff; }
+
+  .chat-area {
+    display: flex; flex-direction: column; position: relative;
+  }
+
+  .messages {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,200,255,0.2) transparent;
+  }
+
+  .msg {
+    display: flex; flex-direction: column; gap: 4px;
+    max-width: 85%;
+  }
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.ai { align-self: flex-start; align-items: flex-start; }
+
+  .msg-label {
+    font-size: 10px; letter-spacing: 2px;
+    color: rgba(125,214,248,0.4);
+  }
+  .msg.user .msg-label { color: rgba(255,107,53,0.6); }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px; line-height: 1.5;
+    font-weight: 400;
+  }
+  .msg.ai .msg-bubble {
+    background: rgba(0,200,255,0.07);
+    border: 1px solid rgba(0,200,255,0.2);
+    color: #b0e8ff;
+  }
+  .msg.user .msg-bubble {
+    background: rgba(255,107,53,0.1);
+    border: 1px solid rgba(255,107,53,0.25);
+    color: #ffd0b8;
+  }
+
+  .typing {
+    display: none; align-items: center; gap: 6px; padding: 10px 14px;
+    background: rgba(0,200,255,0.07);
+    border: 1px solid rgba(0,200,255,0.2);
+    border-radius: 8px; width: fit-content;
+  }
+  .typing.show { display: flex; }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #00d4ff;
+    animation: tdot 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2){animation-delay:.2s}
+  .typing-dot:nth-child(3){animation-delay:.4s}
+  @keyframes tdot{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+
+  .input-bar {
+    padding: 14px 20px;
+    border-top: 1px solid rgba(0,200,255,0.15);
+    display: flex; gap: 10px; align-items: center;
+  }
+
+  .inp {
+    flex: 1; background: rgba(0,200,255,0.05);
+    border: 1px solid rgba(0,200,255,0.25);
+    border-radius: 8px; padding: 10px 14px;
+    color: #7dd6f8; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .inp::placeholder { color: rgba(125,214,248,0.3); }
+  .inp:focus { border-color: rgba(0,200,255,0.6); }
+
+  .send-btn {
+    background: rgba(0,200,255,0.12);
+    border: 1px solid rgba(0,200,255,0.4);
+    border-radius: 8px; padding: 10px 18px;
+    color: #00d4ff; cursor: pointer;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .send-btn:hover {
+    background: rgba(0,200,255,0.25);
+    box-shadow: 0 0 12px rgba(0,200,255,0.2);
+  }
+
+  .corner { position: absolute; width: 16px; height: 16px; }
+  .corner.tl { top: 0; left: 0; border-top: 2px solid #00d4ff; border-left: 2px solid #00d4ff; }
+  .corner.tr { top: 0; right: 0; border-top: 2px solid #00d4ff; border-right: 2px solid #00d4ff; }
+  .corner.bl { bottom: 0; left: 0; border-bottom: 2px solid #00d4ff; border-left: 2px solid #00d4ff; }
+  .corner.br { bottom: 0; right: 0; border-bottom: 2px solid #00d4ff; border-right: 2px solid #00d4ff; }
+
+  .quick-prompts {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 10px;
+  }
+  .qp {
+    background: rgba(0,200,255,0.05);
+    border: 1px solid rgba(0,200,255,0.2);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; color: rgba(125,214,248,0.7);
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .qp:hover { background: rgba(0,200,255,0.12); color: #00d4ff; border-color: rgba(0,200,255,0.5); }
+
+  .hud-ring {
+    position: absolute; right: -30px; top: 50%;
+    transform: translateY(-50%);
+    width: 180px; height: 180px;
+    opacity: 0.07; pointer-events: none;
+  }
+</style>
+
+<div class="jarvis-wrap">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+  <div class="grid-bg"></div>
+  <div class="scan-line"></div>
+
+  <div class="header">
+    <div class="logo">J<span>.</span>A<span>.</span>R<span>.</span>V<span>.</span>I<span>.</span>S</div>
+    <div class="status-bar">
+      <div class="dot"></div>
+      <span>SYSTEMS ONLINE</span>
+      <span>•</span>
+      <span id="clock">00:00:00</span>
+      <span>•</span>
+      <span>AI CORE v9.1</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-label">CAPABILITIES</div>
+      <button class="cap-btn active" onclick="setMode('chat')">
+        <i class="ti ti-message-circle" aria-hidden="true"></i> Chat & Reasoning
+      </button>
+      <button class="cap-btn" onclick="setMode('analysis')">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i> Data Analysis
+      </button>
+      <button class="cap-btn" onclick="setMode('code')">
+        <i class="ti ti-code" aria-hidden="true"></i> Code Generation
+      </button>
+      <button class="cap-btn" onclick="setMode('research')">
+        <i class="ti ti-search" aria-hidden="true"></i> Web Research
+      </button>
+      <button class="cap-btn" onclick="setMode('image')">
+        <i class="ti ti-photo" aria-hidden="true"></i> Image Analysis
+      </button>
+      <button class="cap-btn" onclick="setMode('math')">
+        <i class="ti ti-math" aria-hidden="true"></i> Math & Science
+      </button>
+
+      <div class="sidebar-label" style="margin-top:10px">SYSTEM STATUS</div>
+      <div style="padding: 8px 12px; font-size:12px; color:rgba(125,214,248,0.6); line-height:2">
+        <div style="display:flex;justify-content:space-between"><span>Neural Core</span><span style="color:#00ff88">ACTIVE</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Memory</span><span style="color:#00ff88">OPTIMAL</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Reasoning</span><span style="color:#00d4ff">ENHANCED</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Response</span><span style="color:#00ff88">INSTANT</span></div>
+      </div>
+    </div>
+
+    <div class="chat-area">
+      <div class="messages" id="messages">
+        <div class="msg ai">
+          <div class="msg-label">J.A.R.V.I.S.</div>
+          <div class="msg-bubble">
+            Good day. I am J.A.R.V.I.S. — Just A Rather Very Intelligent System. I am online and fully operational. How may I assist you today?
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 0 20px 6px">
+        <div class="typing" id="typing">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <span style="font-size:11px;color:rgba(125,214,248,0.5);margin-left:4px;letter-spacing:1px">PROCESSING</span>
+        </div>
+      </div>
+
+      <div class="quick-prompts" id="quick-prompts">
+        <div class="qp" onclick="sendQuick('What can you do?')">What can you do?</div>
+        <div class="qp" onclick="sendQuick('Run a system diagnostic')">Run diagnostic</div>
+        <div class="qp" onclick="sendQuick('Tell me a fascinating science fact')">Science fact</div>
+        <div class="qp" onclick="sendQuick('Analyze the current global AI landscape')">AI landscape</div>
+      </div>
+
+      <div class="input-bar">
+        <input class="inp" id="inp" placeholder="Enter command, Mr. Stark..." onkeydown="if(event.key==='Enter')send()" />
+        <button class="send-btn" onclick="send()">SEND ↗</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let mode = 'chat';
+const modePrompts = {
+  chat: "You are J.A.R.V.I.S. from Iron Man — a brilliant, composed AI assistant. Respond in character: formal yet warm, highly intelligent, occasionally using phrases like 'Sir', 'Indeed', 'Shall I', 'I've analyzed'. Keep responses concise (2-4 sentences), insightful, and slightly British in tone. No markdown, just plain text.",
+  analysis: "You are J.A.R.V.I.S. in Data Analysis mode. Respond as the Iron Man AI analyzing data or explaining data concepts. Be precise, numerical where helpful, and analytical. Keep it to 2-4 sentences, no markdown.",
+  code: "You are J.A.R.V.I.S. in Code Generation mode. Give a brief code tip or snippet explanation as the Iron Man AI would — efficient, precise. Keep it concise, no long blocks.",
+  research: "You are J.A.R.V.I.S. in Research mode. Synthesize what you know about the topic like a genius AI briefing Tony Stark. 2-4 sentences, factual, slightly formal.",
+  image: "You are J.A.R.V.I.S. in Image Analysis mode. Respond in character even if no image is provided — explain what you'd look for or analyze hypothetically. 2-3 sentences.",
+  math: "You are J.A.R.V.I.S. in Math & Science mode. Explain the concept or solve the problem as the Iron Man AI would — brilliant, clear, occasionally awe-inspiring about the universe. 2-4 sentences."
+};
+
+const modeGreetings = {
+  chat: "Good day. Standard interface active. What do you require, Sir?",
+  analysis: "Data Analysis module engaged. Feed me the numbers.",
+  code: "Code Generation suite online. What shall we build today?",
+  research: "Research mode activated. I have access to extensive knowledge bases.",
+  image: "Visual Analysis systems primed. Present your image or describe what you need analyzed.",
+  math: "Mathematics & Science core loaded. The universe is full of elegant equations."
+};
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.cap-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.cap-btn').classList.add('active');
+  addMsg('ai', modeGreetings[m]);
+}
+
+function addMsg(role, text) {
+  const box = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = `<div class="msg-label">${role==='ai'?'J.A.R.V.I.S.':'YOU'}</div><div class="msg-bubble">${text}</div>`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sendQuick(text) {
+  document.getElementById('inp').value = text;
+  send();
+}
+
+async function send() {
+  const inp = document.getElementById('inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  addMsg('user', text);
+  document.getElementById('quick-prompts').style.display = 'none';
+
+  const typing = document.getElementById('typing');
+  typing.classList.add('show');
+  document.getElementById('messages').scrollTop = 999999;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: modePrompts[mode],
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    typing.classList.remove('show');
+    const reply = data.content?.map(c => c.text || '').join('') || 'I encountered an anomaly, Sir.';
+    addMsg('ai', reply);
+  } catch(e) {
+    typing.classList.remove('show');
+    addMsg('ai', 'I seem to be experiencing a temporary systems disruption, Sir. My apologies.');
+  }
+}
+
+function tick() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toTimeString().slice(0,8);
+}
+tick(); setInterval(tick, 1000);
+</script>

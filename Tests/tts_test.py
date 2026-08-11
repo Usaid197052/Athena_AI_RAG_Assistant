@@ -3,7 +3,7 @@ from voice.text_to_speech import speak
 
 def main():
 
-    print("Jarvis Text-To-Speech Test")
+    print("Athena Text-To-Speech Test")
     print("Type 'exit' to quit.")
 
     while True:

@@ -11,7 +11,7 @@ from logs.logger import (
 
 def main():
 
-    print("Jarvis Permission Test")
+    print("Athena Permission Test")
     print("Type 'exit' to quit")
 
     while True:
@@ -50,7 +50,7 @@ def main():
         if requires_confirmation(tool_name):
 
             approval = input(
-                f"\nJarvis wants to execute '{tool_name}'. Proceed? (Y/N): "
+                f"\nAthena wants to execute '{tool_name}'. Proceed? (Y/N): "
             )
 
             if approval.lower() != "y":

@@ -1,24 +1,33 @@
-from brain.ollama_client import ask_jarvis
+from brain.ollama_client import ask_athena
+from brain.prompt_manager import chat_system_prompt
+from memory import short_term, summarizer
 
 
-def chat_with_jarvis(user_request):
+def chat_with_athena(user_request, extra_context: str = ""):
+
+    context = short_term.get_context()
+    memory_block = ""
+    if extra_context.strip():
+        memory_block = (
+            "\nRetrieved memory (use only if relevant):\n"
+            f"{extra_context}\n"
+        )
 
     prompt = f"""
-You are Jarvis.
-
-You are a professional voice assistant.
-
-Rules:
-- Respond in plain spoken English.
-- Do not use emojis.
-- Do not use markdown.
-- Do not use bullet points unless necessary.
-- Keep responses concise and conversational.
-- Speak as if your response will be read aloud.
-- Never include symbols such as 😊, 👍, 🎉, **, ##, or markdown formatting.
-
+{chat_system_prompt(context)}
+{memory_block}
 User:
 {user_request}
 """
 
-    return ask_jarvis(prompt)
+    response = ask_athena(prompt)
+
+    short_term.add_exchange(user_request, response)
+
+    summarizer.maybe_summarize()
+
+    return response
+
+
+# Backward-compatible alias
+chat_with_jarvis = chat_with_athena

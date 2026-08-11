@@ -1,6 +1,5 @@
-import json
-
-from brain.ollama_client import ask_jarvis
+from brain.ollama_client import ask_athena
+from brain.planner import extract_json
 
 
 def classify_intent(user_request):
@@ -14,19 +13,19 @@ Possible intents:
 
 1. action
    - Open applications
-   - Create files
-   - Delete files
-   - Move files
-   - Run scripts
-   - Run commands
-   - Perform system actions
+   - Create, read, delete, move, or copy files
+   - Run scripts or shell commands
+   - Perform system actions (shutdown, restart, sleep)
+   - Ingest or search documents (PDF, DOCX, TXT)
+   - Ask questions about ingested documents
+   - Take screenshots or read text on screen
+   - Click on-screen UI, type text, or press keys
 
 2. chat
-   - General questions
-   - Explanations
-   - Conversation
-   - Math questions
-   - Knowledge questions
+   - General conversation
+   - Explanations that do not need tools
+   - Math questions with no computer action
+   - World knowledge questions not based on local documents
 
 Return ONLY JSON.
 
@@ -40,6 +39,36 @@ Response:
 
 User:
 Create a file called notes.txt
+
+Response:
+{{"intent":"action"}}
+
+User:
+Ingest report.pdf
+
+Response:
+{{"intent":"action"}}
+
+User:
+What does the document say about pricing?
+
+Response:
+{{"intent":"action"}}
+
+User:
+Take a screenshot
+
+Response:
+{{"intent":"action"}}
+
+User:
+Read what is on my screen
+
+Response:
+{{"intent":"action"}}
+
+User:
+Click the Save button
 
 Response:
 {{"intent":"action"}}
@@ -66,11 +95,16 @@ User Request:
 {user_request}
 """
 
-    response = ask_jarvis(prompt)
+    response = ask_athena(prompt)
 
     try:
 
-        return json.loads(response)
+        result = extract_json(response)
+
+        if result.get("intent") not in ("action", "chat"):
+            return {"intent": "chat"}
+
+        return result
 
     except Exception:
 

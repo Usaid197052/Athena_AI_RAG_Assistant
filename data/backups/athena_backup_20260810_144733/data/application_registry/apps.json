@@ -1,0 +1,168 @@
+{
+  "calc": {
+    "display_name": "calc",
+    "aliases": [
+      "calc"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\system32\\calc.exe",
+    "process_names": [
+      "calc.exe"
+    ]
+  },
+  "cmd": {
+    "display_name": "cmd",
+    "aliases": [
+      "cmd"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\system32\\cmd.exe",
+    "process_names": [
+      "cmd.exe"
+    ]
+  },
+  "notepad": {
+    "display_name": "Notepad",
+    "aliases": [
+      "notepad",
+      "text editor"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\System32\\notepad.exe",
+    "process_names": [
+      "notepad.exe"
+    ]
+  },
+  "explorer": {
+    "display_name": "explorer",
+    "aliases": [
+      "explorer"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\explorer.exe",
+    "process_names": [
+      "explorer.exe"
+    ]
+  },
+  "py": {
+    "display_name": "py",
+    "aliases": [
+      "py"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\py.exe",
+    "process_names": [
+      "py.exe"
+    ]
+  },
+  "powershell": {
+    "display_name": "powershell",
+    "aliases": [
+      "powershell"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "process_names": [
+      "powershell.exe"
+    ]
+  },
+  "docker": {
+    "display_name": "docker",
+    "aliases": [
+      "docker"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+    "process_names": [
+      "docker.exe"
+    ]
+  },
+  "python": {
+    "display_name": "python",
+    "aliases": [
+      "python"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Users\\papab\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "process_names": [
+      "python.exe"
+    ]
+  },
+  "wt": {
+    "display_name": "wt",
+    "aliases": [
+      "wt"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Users\\papab\\AppData\\Local\\Microsoft\\WindowsApps\\wt.exe",
+    "process_names": [
+      "wt.exe"
+    ]
+  },
+  "visual studio": {
+    "display_name": "Visual Studio",
+    "aliases": [
+      "devenv",
+      "microsoft visual studio",
+      "visual studio",
+      "vs"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\devenv.exe",
+    "process_names": [
+      "devenv.exe"
+    ]
+  },
+  "docker desktop": {
+    "display_name": "Docker Desktop",
+    "aliases": [
+      "docker",
+      "docker desktop"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe",
+    "process_names": [
+      "docker desktop.exe"
+    ]
+  },
+  "calculator": {
+    "display_name": "Calculator",
+    "aliases": [
+      "calc",
+      "calculator"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\System32\\calc.exe",
+    "process_names": [
+      "calc.exe",
+      "calculator.exe",
+      "calculatorapp.exe"
+    ]
+  },
+  "command prompt": {
+    "display_name": "Command Prompt",
+    "aliases": [
+      "cmd",
+      "command prompt",
+      "terminal"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\System32\\cmd.exe",
+    "process_names": [
+      "cmd.exe"
+    ]
+  },
+  "windows powershell": {
+    "display_name": "Windows PowerShell",
+    "aliases": [
+      "powershell",
+      "ps",
+      "windows powershell"
+    ],
+    "launch_type": "executable",
+    "target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "process_names": [
+      "powershell.exe"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "created_at": "20260810_144733",
+  "version": "0.1.0",
+  "copied": [
+    "config/permissions.yaml",
+    "config/settings.py",
+    ".env.example",
+    "data/application_registry/apps.json",
+    "data/memory",
+    "data/sessions",
+    "rag/store/vector_store.json"
+  ],
+  "excluded": [
+    ".env",
+    "credentials",
+    "tokens",
+    "logs with secrets"
+  ]
+}

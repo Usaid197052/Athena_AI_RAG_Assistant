@@ -1,0 +1,8 @@
+[
+  {
+    "id": "proc_whatsapp.exe",
+    "type": "process",
+    "match": "WhatsApp.exe",
+    "on": "appear"
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "password_salt": "9fa4bd3a9e5574e98d6e6e5c1c11bc78",
+  "password_hash": "8f5219a58909484d6161f4036ad972d25e2323f50bff29d140854d527d3f82a9",
+  "pbkdf2_iters": 200000,
+  "command_key": "HXmLWHmvsiNjHC27qvG7uFXQWL0Owktr"
+}

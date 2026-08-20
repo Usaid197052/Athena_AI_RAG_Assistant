@@ -43,14 +43,14 @@
       "updated": "2026-08-16"
     },
     "language": {
-      "value": "Urdu",
-      "updated": "2026-08-19"
+      "value": "English",
+      "updated": "2026-08-20"
     }
   },
   "projects": {
     "personal_ai_assistant": {
-      "value": "developing a personal AI assistant",
-      "updated": "2026-08-15"
+      "value": "Developing and debugging a personal AI assistant project using Python",
+      "updated": "2026-08-20"
     }
   },
   "relationships": {
@@ -68,18 +68,18 @@
   "learned": {
     "routines": {
       "work_hours": {
-        "value": "typically 11:00-18:00",
-        "updated": "2026-08-18"
+        "value": "typically 11:00-15:00",
+        "updated": "2026-08-20"
       },
       "primary_apps": {
-        "value": "python (2.0h), cursor (34m), explorer (16m), msedge (11m), cmd (7m)",
-        "updated": "2026-08-19"
+        "value": "python (2.7h), terminal64 (60m), cursor (45m), msedge (31m), explorer (28m)",
+        "updated": "2026-08-20"
       }
     },
     "today": {
       "summary": {
-        "value": "python 39m, cursor 7m, notepad 2m",
-        "updated": "2026-08-19"
+        "value": "terminal64 60m, python 42m, msedge 20m",
+        "updated": "2026-08-20"
       }
     },
     "lessons": {
@@ -130,6 +130,26 @@
       "user_requested_to_communicate_in_urdu": {
         "value": "User requested to communicate in Urdu.",
         "updated": "2026-08-19"
+      },
+      "user_often_speaks_english_phrases_transl": {
+        "value": "User often speaks English phrases transliterated into Indic scripts (Devanagari and Telugu).",
+        "updated": "2026-08-20"
+      },
+      "user_may_write_english_using_devanagari": {
+        "value": "User may write English using Devanagari script or spaced-out English letters.",
+        "updated": "2026-08-20"
+      },
+      "user_uses_metabase_for_visualizing_funne": {
+        "value": "User uses Metabase for visualizing funnel KPIs and SQL query outputs.",
+        "updated": "2026-08-20"
+      },
+      "user_may_type_english_urdu_commands_phon": {
+        "value": "User may type English/Urdu commands phonetically using Devanagari script.",
+        "updated": "2026-08-20"
+      },
+      "always_respond_in_english": {
+        "value": "Always respond in English.",
+        "updated": "2026-08-20"
       }
     },
     "weather_routine": {
@@ -139,51 +159,56 @@
   },
   "sessions": [
     {
-      "date": "2026-08-19",
-      "summary": "The user had the assistant view their screen, which showed the Athena interface and open drive folders.",
+      "date": "2026-08-20",
+      "summary": "The user requested system status reports, checked the weather in Lahore, sent a WhatsApp message to a contact, re-enabled continuous system monitoring, and placed the assistant into standby mode.",
       "language": "English",
       "briefed": true
     },
     {
-      "date": "2026-08-19",
-      "summary": "The user greeted Athena in Arabic and requested a system shutdown using Telugu.",
-      "language": "English",
-      "briefed": true
-    },
-    {
-      "date": "2026-08-19",
-      "summary": "The user checked if Athena could hear them and requested a system status report, receiving details on CPU, RAM, battery, and uptime.",
-      "language": "English",
-      "briefed": true
-    },
-    {
-      "date": "2026-08-19",
-      "summary": "The user reconnected with the assistant and greeted her in Arabic.",
-      "language": "English",
-      "briefed": true
-    },
-    {
-      "date": "2026-08-19",
-      "summary": "Usaid Ahmed checked his system performance and inquired about why his C drive was nearly full, while also clarifying that Athena should use feminine self-referential grammar.",
+      "date": "2026-08-20",
+      "summary": "The user asked to analyze a CSV order dataset, view specific columns and funnel KPIs, requested SQL queries for Metabase, and instructed the assistant to speak in English.",
       "language": "English"
     },
     {
-      "date": "2026-08-19",
-      "summary": "The user asked the assistant to switch to Urdu, requested to disable system monitoring, and inquired about the connection status of their WhatsApp bridge.",
+      "date": "2026-08-20",
+      "summary": "The user uploaded a CSV dataset and requested SQL queries for funnel KPIs to visualize in Metabase. Athena analyzed the file and provided the corresponding SQL queries for metrics like total revenue, order counts, and average order value.",
       "language": "English",
       "briefed": true
     },
     {
-      "date": "2026-08-19",
-      "summary": "The user checked the status of their WhatsApp bridge and habit learning, enabled system monitoring, and instructed the assistant to go into standby mode to alert them of unusual system activity.",
+      "date": "2026-08-20",
+      "summary": "The user checked system status and WhatsApp messages, composed and sent a reply to Sajjad, and requested a search for Lahore's weather.",
       "language": "English",
       "briefed": true
+    },
+    {
+      "date": "2026-08-20",
+      "summary": "Usaid Ahmed shared his screen showing a EURUSD candlestick chart on MetaTrader 5 and asked for buy/sell trading advice, which Athena politely declined to provide.",
+      "language": "English"
+    },
+    {
+      "date": "2026-08-20",
+      "summary": "The user analyzed forex charts (GBPUSD, EURUSD, USDCHF, USDJPY) with Athena, discussed trading performance on their account, and worked on their personal AI assistant project using Python and the terminal.",
+      "language": "English"
+    },
+    {
+      "date": "2026-08-20",
+      "summary": "The user reviewed Forex market analyses for EURUSD and USDJPY, addressed high RAM usage from Python development, and instructed the assistant to communicate exclusively in English.",
+      "language": "English"
     }
   ],
   "user": {
     "name": {
       "value": "Usaid Ahmed",
       "updated": "2026-08-17"
+    },
+    "preferred_language": {
+      "value": "English",
+      "updated": "2026-08-20"
+    },
+    "location": {
+      "value": "Lahore",
+      "updated": "2026-08-20"
     }
   },
   "user_info": {
@@ -220,8 +245,8 @@
   },
   "user_profile": {
     "name": {
-      "value": "Muhammad Usaid Ahmed",
-      "updated": "2026-08-19"
+      "value": "Usaid",
+      "updated": "2026-08-20"
     },
     "role": {
       "value": "Data Engineer",
@@ -240,6 +265,22 @@
     "system_monitoring": {
       "value": "disabled",
       "updated": "2026-08-19"
+    }
+  },
+  "tools": {
+    "bi_tool": {
+      "value": "Metabase",
+      "updated": "2026-08-20"
+    }
+  },
+  "profile": {
+    "name": {
+      "value": "Usaid",
+      "updated": "2026-08-20"
+    },
+    "trading_account_balance": {
+      "value": "100,000 USD",
+      "updated": "2026-08-20"
     }
   }
 }

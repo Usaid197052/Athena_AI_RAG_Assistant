@@ -61,6 +61,7 @@ from actions.whatsapp_control  import whatsapp_control
 from actions.reminder          import reminder
 from actions.computer_settings import computer_settings
 from actions.screen_processor  import _capture_camera, _capture_screen
+from actions.mt5_analysis      import mt5_analysis, capture_chart_snapshot, CHART_ANALYSIS_PROMPT
 from actions.youtube_video     import youtube_video
 from actions.desktop           import desktop_control
 from actions.browser_control   import browser_control
@@ -280,6 +281,44 @@ TOOL_DECLARATIONS = [
         }
     },
     {
+        "name": "mt5_analysis",
+        "description": (
+            "Read-only MetaTrader 5 analysis. Never places orders. "
+            "When the user asks buy or sell, call ta or analyze and the result includes BIAS BUY|SELL|WAIT — "
+            "you MUST speak that bias; do not refuse as 'I cannot give trading advice'. "
+            "quote = bid/ask/spread. ta = indicators plus BIAS. analyze = ta plus calendar. "
+            "fa = calendar plus short news. status = terminal connected. "
+            "snapshot = ONE still of the MT5 chart window. NEVER share_screen for trading or charts. "
+            "Prefer quote/ta/analyze when they name a pair without asking to look."
+        ),
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "action": {
+                    "type": "STRING",
+                    "description": "status | quote | ta | analyze | fa | snapshot (default: analyze)",
+                },
+                "symbol": {
+                    "type": "STRING",
+                    "description": "MT5 symbol e.g. EURUSD, XAUUSD, GBPJPY, US30",
+                },
+                "timeframe": {
+                    "type": "STRING",
+                    "description": "M1 | M5 | M15 | M30 | H1 | H4 | D1 | W1 (default H1)",
+                },
+                "fundamentals": {
+                    "type": "BOOLEAN",
+                    "description": "If true with analyze, also fetch a short news pass",
+                },
+                "text": {
+                    "type": "STRING",
+                    "description": "User question about the chart (snapshot only)",
+                },
+            },
+            "required": [],
+        },
+    },
+    {
         "name": "system_status",
         "description": (
             "Returns real-time system metrics: CPU usage, RAM, GPU load, CPU temperature, "
@@ -424,7 +463,8 @@ TOOL_DECLARATIONS = [
             "While sharing, live stills of the display are sent as the user talks — "
             "you already see the current screen; do not call screen_process for every question. "
             "Answer from the latest still, not an earlier window. "
-            "Default is off. Camera is a different tool (screen_process angle=camera)."
+            "Default is off. Camera is a different tool (screen_process angle=camera). "
+            "Do NOT use this for MetaTrader, charts, graphs, or trading — use mt5_analysis action=snapshot."
         ),
         "parameters": {
             "type": "OBJECT",
@@ -740,7 +780,6 @@ TOOL_DECLARATIONS = [
             "Use 'add' when the user says 'monitor X', 'track X', 'follow X'. "
             "Use 'remove' when the user says 'stop monitoring X'. "
             "Use 'list' when the user asks what news topics are monitored. "
-            "Do NOT add crypto, financial, or trading topics. "
             "For continuous PC monitoring / proactive check-ins / process watches, "
             "use manage_continuous_monitor instead."
         ),
@@ -1927,6 +1966,52 @@ class AthenaLive:
             elif name == "youtube_video":
                 r = await loop.run_in_executor(None, lambda: youtube_video(parameters=args, response=None, player=self.ui))
                 result = r or "Done."
+
+            elif name == "mt5_analysis":
+                _mt5_act = str(args.get("action") or "analyze").strip().lower().replace("-", "_")
+                if _mt5_act == "snapshot":
+                    import time as _t_mod
+                    _now = _t_mod.monotonic()
+                    if self._vision_busy or (_now - self._vision_last_time) < 4.0:
+                        result = (
+                            "A chart snapshot is still being processed. "
+                            "Do not call mt5_analysis snapshot or share_screen again."
+                        )
+                    else:
+                        self._vision_busy = True
+                        self._vision_last_time = _now
+                        try:
+                            img_b, mime_t, note = await loop.run_in_executor(
+                                None, capture_chart_snapshot
+                            )
+                        except Exception as e:
+                            self._vision_busy = False
+                            result = (
+                                f"Chart snapshot failed: {e}. "
+                                "Ask the user to open MetaTrader 5 so the chart window is visible."
+                            )
+                        else:
+                            user_q = str(
+                                args.get("text") or args.get("question") or "Analyze this chart."
+                            ).strip()
+                            prompt = (
+                                f"{CHART_ANALYSIS_PROMPT}\n{note}\n"
+                                f"User request: {user_q}"
+                            )
+                            self._pending_vision = (img_b, mime_t, prompt, "screen")
+                            print(f"[MT5] snapshot {len(img_b):,} bytes — {note}")
+                            result = (
+                                f"[VISION_ACTIVE] Chart captured ({note}). "
+                                f"Immediately say ONE short natural sentence in {get_response_language()}, "
+                                "telling them you are looking at the chart right now. "
+                                "Do NOT describe or guess content — the actual image arrives in the NEXT message. "
+                                "Never call share_screen."
+                            )
+                else:
+                    r = await loop.run_in_executor(
+                        None, lambda: mt5_analysis(parameters=args, player=self.ui)
+                    )
+                    result = r or "MT5 analysis failed."
 
             elif name == "screen_process":
                 import time as _t_mod

@@ -1,0 +1,245 @@
+[
+  {
+    "ts": "2026-08-20T10:54:18.085132+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "WAIT",
+    "status": "WAIT",
+    "reason": "neutral TA \u2014 no order",
+    "bar_time": 1787230800,
+    "rsi": 70.95839740327196,
+    "atr": 0.0011795186609251322,
+    "close": 1.16949,
+    "exec": null
+  },
+  {
+    "ts": "2026-08-20T10:57:22.594615+00:00",
+    "symbol": "*",
+    "bias": "FLAT",
+    "status": "CLOSED",
+    "reason": "No Athena positions",
+    "exec": {
+      "ok": true,
+      "status": "CLOSED",
+      "closed": 0,
+      "reason": "No Athena positions"
+    }
+  },
+  {
+    "ts": "2026-08-20T11:00:19.133313+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "WAIT",
+    "status": "WAIT",
+    "reason": "neutral TA \u2014 no order",
+    "bar_time": 1787234400,
+    "rsi": 72.79460709783307,
+    "atr": 0.0010457161728017908,
+    "close": 1.1696900000000001,
+    "exec": null
+  },
+  {
+    "ts": "2026-08-20T11:14:51.095442+00:00",
+    "symbol": "USDCAD",
+    "tf": "H1",
+    "bias": "SELL",
+    "status": "BLOCKED",
+    "reason": "order_send autotrading_disabled (10027) AutoTrading disabled by client",
+    "bar_time": 1787234400,
+    "rsi": 23.43261045149751,
+    "atr": 0.0011020411283010425,
+    "close": 1.37664,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "order_send autotrading_disabled (10027) AutoTrading disabled by client"
+    }
+  },
+  {
+    "ts": "2026-08-20T11:15:30.638136+00:00",
+    "symbol": "USDCAD",
+    "tf": "H1",
+    "bias": "SELL",
+    "status": "BLOCKED",
+    "reason": "order_send autotrading_disabled (10027) AutoTrading disabled by client",
+    "bar_time": 1787234400,
+    "rsi": 23.515966158204122,
+    "atr": 0.0011020411283010425,
+    "close": 1.37667,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "order_send autotrading_disabled (10027) AutoTrading disabled by client"
+    }
+  },
+  {
+    "ts": "2026-08-20T11:22:58.279197+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "WAIT",
+    "status": "WAIT",
+    "reason": "neutral TA \u2014 no order",
+    "bar_time": 1787234400,
+    "rsi": 68.92334017520022,
+    "atr": 0.0011510495061351333,
+    "close": 1.16929,
+    "exec": null
+  },
+  {
+    "ts": "2026-08-20T11:26:23.188201+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "BUY",
+    "status": "FILLED",
+    "reason": "BUY EURUSD vol=0.01 @ 1.16965 SL=1.16791 TP=1.17194 ticket=10120278537",
+    "bar_time": 1787234400,
+    "score": 2,
+    "rsi": 72.18642505341376,
+    "atr": 0.0011510495061351333,
+    "close": 1.16963,
+    "exec": {
+      "ok": true,
+      "status": "FILLED",
+      "side": "BUY",
+      "symbol": "EURUSD",
+      "volume": 0.01,
+      "price": 1.16965,
+      "sl": 1.16791,
+      "tp": 1.17194,
+      "ticket": 10120278537,
+      "deal": 9825003763,
+      "comment": "Request executed"
+    }
+  },
+  {
+    "ts": "2026-08-20T12:00:02.938158+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "WAIT",
+    "status": "WAIT",
+    "reason": "neutral TA \u2014 no order",
+    "bar_time": 1787238000,
+    "rsi": 62.4607833552531,
+    "atr": 0.001081220683094865,
+    "close": 1.16854,
+    "exec": null
+  },
+  {
+    "ts": "2026-08-20T12:59:16.926149+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "BUY",
+    "status": "BLOCKED",
+    "reason": "Already in BUY EURUSD ticket 10120278537",
+    "bar_time": 1787238000,
+    "score": 2,
+    "rsi": 64.32750219546458,
+    "atr": 0.0012358873497615383,
+    "close": 1.16895,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "Already in BUY EURUSD ticket 10120278537",
+      "ticket": 10120278537
+    }
+  },
+  {
+    "ts": "2026-08-20T13:00:19.180862+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "BUY",
+    "status": "BLOCKED",
+    "reason": "Already in BUY EURUSD ticket 10120278537",
+    "bar_time": 1787241600,
+    "score": 2,
+    "rsi": 64.58850063202368,
+    "atr": 0.0010924357031266581,
+    "close": 1.169,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "Already in BUY EURUSD ticket 10120278537",
+      "ticket": 10120278537
+    }
+  },
+  {
+    "ts": "2026-08-20T13:14:26.669705+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "BUY",
+    "status": "BLOCKED",
+    "reason": "Already in BUY EURUSD ticket 10120278537",
+    "bar_time": 1787241600,
+    "score": 2,
+    "rsi": 63.76540055963205,
+    "atr": 0.0011604357031266596,
+    "close": 1.1688399999999999,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "Already in BUY EURUSD ticket 10120278537",
+      "ticket": 10120278537
+    }
+  },
+  {
+    "ts": "2026-08-20T13:50:01.282546+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "SELL",
+    "status": "CLOSED",
+    "reason": "Opposite BIAS SELL vs open BUY \u2014 closed only, no reverse.",
+    "bar_time": 1787241600,
+    "score": -2,
+    "rsi": 54.75133989003742,
+    "atr": 0.001323102369793326,
+    "close": 1.16759,
+    "exec": {
+      "ok": false,
+      "status": "CLOSED",
+      "reason": "Opposite BIAS SELL vs open BUY \u2014 closed only, no reverse.",
+      "close": {
+        "ok": false,
+        "status": "BLOCKED",
+        "closed": 0,
+        "tickets": [],
+        "errors": [
+          "EURUSD #10120278537 autotrading_disabled AutoTrading disabled by client"
+        ],
+        "reason": "EURUSD #10120278537 autotrading_disabled AutoTrading disabled by client"
+      }
+    }
+  },
+  {
+    "ts": "2026-08-20T14:03:51.775306+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "WAIT",
+    "status": "WAIT",
+    "reason": "neutral TA score=-1 \u2014 no order",
+    "bar_time": 1787245200,
+    "score": -1,
+    "rsi": 54.25107932841051,
+    "atr": 0.0012224220538209131,
+    "close": 1.16751,
+    "exec": null
+  },
+  {
+    "ts": "2026-08-20T14:21:33.697859+00:00",
+    "symbol": "EURUSD",
+    "tf": "H1",
+    "bias": "BUY",
+    "status": "BLOCKED",
+    "reason": "Already in BUY EURUSD ticket 10120278537",
+    "bar_time": 1787245200,
+    "score": 2,
+    "rsi": 55.301542706793995,
+    "atr": 0.001273088720487586,
+    "close": 1.1677,
+    "exec": {
+      "ok": false,
+      "status": "BLOCKED",
+      "reason": "Already in BUY EURUSD ticket 10120278537",
+      "ticket": 10120278537
+    }
+  }
+]

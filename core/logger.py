@@ -93,3 +93,19 @@ def log(msg: str, level: str = "info", *, hud: bool = False) -> None:
 
 def log_path() -> Path:
     return _LOG_FILE
+
+
+def get_trading_logger() -> logging.Logger:
+    """Back-compat alias — trading process uses core.trading_logger."""
+    from core.trading_logger import get_logger as _get
+    return _get()
+
+
+def trading_log(msg: str, level: str = "info", *, hud: bool = False) -> None:
+    from core.trading_logger import tlog
+    tlog(msg, level, hud=hud)
+
+
+def trading_log_path() -> Path:
+    from core.trading_logger import log_path as _p
+    return _p()

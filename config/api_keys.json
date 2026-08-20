@@ -1,10 +1,10 @@
 {
-    "gemini_api_key": "AQ.Ab8RN6KxRGWTjptIkKxgqNIUY3-HsZlkwajINMaeZ7c_CMSQfw",
+    "gemini_api_key": "AQ.Ab8RN6L7dAyhAuNfRD_whD6x494FOxpUFPco_b0wGYUKSX3j5Q",
     "os_system": "windows",
     "assistant_name": "Athena",
     "user_name": "Usaid Ahmed",
     "ui_color": "#3ddcd0",
-    "morning_brief_enabled": true,
+    "morning_brief_enabled": false,
     "spotify": {
         "client_id": "c5e5c2d8a6b742fe865b9fea8dcb01fb",
         "redirect_uri": "http://127.0.0.1:8888/callback",

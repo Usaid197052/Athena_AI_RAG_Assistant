@@ -45,6 +45,7 @@ _WINDOWS: list[tuple[str, str]] = [
     ("pycaw",      "pycaw"),
     ("win10toast", "win10toast"),
     ("pywinauto",  "pywinauto"),
+    ("MetaTrader5", "MetaTrader5"),
 ]
 
 # STT engine packages

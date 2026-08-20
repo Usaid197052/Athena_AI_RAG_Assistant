@@ -13,6 +13,7 @@ pygetwindow
 opencv-python
 pandas
 numpy
+MetaTrader5; sys_platform == "win32"
 openpyxl
 pyarrow
 mss

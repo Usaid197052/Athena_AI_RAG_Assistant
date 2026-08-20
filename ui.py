@@ -2509,7 +2509,7 @@ class MainWindow(QMainWindow):
     _remote_file_sig = pyqtSignal(str)       # phone upload path
     _remote_config_sig = pyqtSignal(str, str, str)  # assistant_name, user_name, ui_color
 
-    def __init__(self, face_path: str):
+    def __init__(self, face_path: str, trading_mode: bool = False):
         super().__init__()
         self._face_path = face_path
 
@@ -2523,7 +2523,9 @@ class MainWindow(QMainWindow):
         if _ui_color and _ui_color.lower() != DEFAULT_UI_COLOR.lower():
             apply_ui_accent(_ui_color)
 
-        self.setWindowTitle(f"{_display} — NYX OVERLAY")
+        self.setWindowTitle(
+            f"{_display} — TRADING DESK" if trading_mode else f"{_display} — NYX OVERLAY"
+        )
         self.setWindowIcon(app_qicon())
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(_DEFAULT_W, _DEFAULT_H)
@@ -2541,6 +2543,8 @@ class MainWindow(QMainWindow):
         self.on_wake_requested  = None  # callable: () -> None — show HUD / wake
         self.on_quit_requested  = None  # callable: () -> None — full process exit
         self.on_api_config_saved = None  # callable: () -> None — reconnect Live
+        self.on_trading_control = None  # callable: (action: str) -> None — pause|resume|flatten
+        self._trading_mode     = bool(trading_mode)
         self._muted            = False
         self._hud_sleeping     = False
         self._tray_hint_shown  = False
@@ -3670,6 +3674,25 @@ class MainWindow(QMainWindow):
         copy_btn.clicked.connect(self._copy_content_panel)
         hdr.addWidget(copy_btn)
 
+        if getattr(self, "_trading_mode", False):
+            def _tbtn(label: str, action: str) -> QPushButton:
+                b = QPushButton(label)
+                b.setFont(QFont("Courier New", 7, QFont.Weight.Bold))
+                b.setFixedHeight(18)
+                b.setCursor(Qt.CursorShape.PointingHandCursor)
+                b.setStyleSheet(f"""
+                    QPushButton {{
+                        background: transparent; color: {C.PRI};
+                        border: 1px solid {C.PRI}; border-radius: 2px; padding: 0 7px;
+                    }}
+                    QPushButton:hover {{ color: {C.TEXT}; border-color: {C.TEXT}; }}
+                """)
+                b.clicked.connect(lambda _=False, a=action: self._emit_trading_control(a))
+                return b
+            hdr.addWidget(_tbtn("PAUSE", "pause"))
+            hdr.addWidget(_tbtn("RESUME", "resume"))
+            hdr.addWidget(_tbtn("FLATTEN", "flatten"))
+
         dismiss = QPushButton("DISMISS  ✕")
         dismiss.setFont(QFont("Courier New", 7))
         dismiss.setFixedHeight(18)
@@ -3748,11 +3771,17 @@ class MainWindow(QMainWindow):
         if hb:
             hb.setValue(0)
 
+    def _emit_trading_control(self, action: str) -> None:
+        cb = getattr(self, "on_trading_control", None)
+        if callable(cb):
+            cb(str(action))
+
     def _show_content(self, title: str, text: str, is_html: bool = False, nowrap: bool = False):
         """Slot — runs on Qt main thread. Updates and shows the content panel."""
-        from memory.config_manager import get_content_panel_enabled
-        if not get_content_panel_enabled():
-            return
+        if not getattr(self, "_trading_mode", False):
+            from memory.config_manager import get_content_panel_enabled
+            if not get_content_panel_enabled():
+                return
         import time as _time
         self._clear_content_panel()
         self._content_title_lbl.setText(title.upper()[:48])
@@ -4491,14 +4520,15 @@ class _RootShim:
 
 
 class AthenaUI:
-    def __init__(self, face_path: str, size=None):
+    def __init__(self, face_path: str, size=None, trading_mode: bool = False):
         self._app = QApplication.instance() or QApplication(sys.argv)
         self._app.setStyle("Fusion")
         self._app.setApplicationName("Athena")
         self._app.setApplicationDisplayName("Athena")
         self._app.setWindowIcon(app_qicon())
         self._app.setQuitOnLastWindowClosed(False)
-        self._win = MainWindow(face_path)
+        self._trading_mode = bool(trading_mode)
+        self._win = MainWindow(face_path, trading_mode=self._trading_mode)
         self._win.show()
         self.root = _RootShim(self._app)
 
@@ -4571,6 +4601,14 @@ class AthenaUI:
     def on_api_config_saved(self, cb):
         self._win.on_api_config_saved = cb
 
+    @property
+    def on_trading_control(self):
+        return self._win.on_trading_control
+
+    @on_trading_control.setter
+    def on_trading_control(self, cb):
+        self._win.on_trading_control = cb
+
     def hide_to_tray(self):
         """Thread-safe: hide HUD to system tray."""
         self._win._hide_tray_sig.emit()
@@ -4610,9 +4648,10 @@ class AthenaUI:
 
     def show_content(self, title: str, text: str, html: bool = False, nowrap: bool = False):
         """Thread-safe: display content in the panel below the HUD."""
-        from memory.config_manager import get_content_panel_enabled
-        if not get_content_panel_enabled():
-            return
+        if not getattr(self, "_trading_mode", False):
+            from memory.config_manager import get_content_panel_enabled
+            if not get_content_panel_enabled():
+                return
         if nowrap:
             cap = 800000
         elif html:
@@ -4625,9 +4664,10 @@ class AthenaUI:
 
     def clear_content(self):
         """Thread-safe: clear the content panel text."""
-        from memory.config_manager import get_content_panel_enabled
-        if not get_content_panel_enabled():
-            return
+        if not getattr(self, "_trading_mode", False):
+            from memory.config_manager import get_content_panel_enabled
+            if not get_content_panel_enabled():
+                return
         self._win._content_clear_sig.emit()
 
     def prompt_reconfig(self):

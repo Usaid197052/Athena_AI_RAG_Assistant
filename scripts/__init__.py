@@ -1,1 +1,0 @@
-"""Athena utility scripts package."""

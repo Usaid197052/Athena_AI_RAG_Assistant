@@ -359,8 +359,6 @@ _LOW_TOOLS = {
     "reminder",
     "game_updater",
     "mt5_analysis",
-    "trading_desk",
-    "trading_control",
 }
 
 _HIGH_TOOLS = {

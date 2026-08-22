@@ -27,9 +27,16 @@ _CACHE_TTL = 20.0
 _NEWS_TIMEOUT = 2.5
 _JPEG_Q = 90
 _SNAP_MAX = (1920, 1080)
+_KEEPALIVE_SEC = 10.0
+_RECONNECT_TRIES = 4
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _initialized = False
+_ever_connected = False
+_keepalive_thread: threading.Thread | None = None
+_keepalive_stop = threading.Event()
+_last_health = ""
+_fail_streak = 0
 _rates_cache: dict[tuple[str, int], tuple[float, np.ndarray]] = {}
 
 _TF_MAP = {
@@ -60,48 +67,328 @@ CHART_ANALYSIS_PROMPT = (
 
 def _log(msg: str) -> None:
     print(f"[MT5] {msg}")
+    try:
+        from core.mt5_log import mt5_log
+        mt5_log(msg, "debug")
+    except Exception:
+        pass
+
+
+def _last_error() -> tuple[int, str]:
+    if mt5 is None:
+        return (-1, "package missing")
+    try:
+        err = mt5.last_error()
+    except Exception as e:
+        return (-1, str(e))
+    if err is None:
+        return (0, "")
+    try:
+        code, text = int(err[0]), str(err[1] if len(err) > 1 else err)
+        return code, text
+    except Exception:
+        return (0, str(err))
+
+
+def _is_ipc_error(code: int) -> bool:
+    return int(code) <= -10000
+
+
+def _running_terminal_path() -> str | None:
+    try:
+        import psutil
+        for p in psutil.process_iter(["name", "exe"]):
+            n = (p.info.get("name") or "").lower()
+            if n in ("terminal64.exe", "terminal.exe"):
+                exe = p.info.get("exe")
+                if exe:
+                    return str(exe)
+    except Exception:
+        pass
+    return None
+
+
+def _teardown() -> None:
+    global _initialized, _last_health
+    _initialized = False
+    _last_health = ""
+    _rates_cache.clear()
+    try:
+        mt5.shutdown()
+    except Exception:
+        pass
+
+
+def _health() -> tuple[bool, str]:
+    """True only if IPC is up AND the terminal is connected to a broker."""
+    if mt5 is None:
+        return False, "MetaTrader5 package not installed"
+    try:
+        term = mt5.terminal_info()
+    except Exception as e:
+        return False, f"terminal_info exception: {e} last={_last_error()}"
+    if term is None:
+        code, text = _last_error()
+        return False, f"terminal_info=None last_error=({code}, {text})"
+    connected = bool(getattr(term, "connected", False))
+    if not connected:
+        code, text = _last_error()
+        return False, (
+            f"broker disconnected name={getattr(term, 'name', '')} "
+            f"last_error=({code}, {text})"
+        )
+    try:
+        acc = mt5.account_info()
+    except Exception as e:
+        return False, f"account_info exception: {e}"
+    if acc is None:
+        code, text = _last_error()
+        return False, f"account_info=None last_error=({code}, {text})"
+    return True, (
+        f"login={acc.login} server={acc.server} "
+        f"connected=1 trade_allowed={bool(getattr(term, 'trade_allowed', False))}"
+    )
+
+
+def _attach() -> bool:
+    path = _running_terminal_path()
+    kwargs: dict = {"timeout": 10_000}
+    if path:
+        kwargs["path"] = path
+    try:
+        return bool(mt5.initialize(**kwargs))
+    except TypeError:
+        try:
+            return bool(mt5.initialize(path) if path else mt5.initialize())
+        except Exception:
+            return False
+    except Exception:
+        return False
 
 
 def _ensure_mt5() -> str | None:
-    """Connect once; reconnect once on failure. Returns error text or None."""
-    global _initialized
+    """Keep a live IPC to the running terminal. Reconnects on drop."""
+    global _initialized, _last_health, _fail_streak, _ever_connected
     if mt5 is None:
         return (
             "MetaTrader5 Python package is not installed. "
             "Run: pip install MetaTrader5"
         )
+
     with _lock:
         if _initialized:
+            ok, why = _health()
+            if ok:
+                if why != _last_health:
+                    from core.mt5_log import mt5_event
+                    mt5_event("ok", status="healthy", reason=why)
+                    _last_health = why
+                _fail_streak = 0
+                start_mt5_keepalive()
+                return None
+            from core.mt5_log import mt5_event
+            mt5_event("drop", status="unhealthy", reason=why)
+            _log(f"connection dropped: {why}")
+            _teardown()
+
+    last_why = ""
+    for attempt in range(1, _RECONNECT_TRIES + 1):
+        if attempt > 1:
+            time.sleep(0.35 * attempt)
+        with _lock:
+            attached = _attach()
+            code, text = _last_error()
+            if not attached:
+                last_why = f"initialize failed attempt={attempt} last_error=({code}, {text})"
+                from core.mt5_log import mt5_event
+                mt5_event("fail", attempt=attempt, error=f"({code}, {text})")
+                _teardown()
+                continue
+            ok, why = _health()
+            if ok:
+                _initialized = True
+                _fail_streak = 0
+                _last_health = why
+                kind = "reconnect" if _ever_connected else "connect"
+                _ever_connected = True
+                from core.mt5_log import mt5_event
+                mt5_event(kind, status="connected", reason=why, attempt=attempt)
+                _log(f"{kind} ({why})")
+                start_mt5_keepalive()
+                return None
+            last_why = why
+            from core.mt5_log import mt5_event
+            mt5_event("fail", attempt=attempt, error=why)
+            _teardown()
+
+    _fail_streak += 1
+    return (
+        "Could not connect to MetaTrader 5. "
+        "Open the terminal, log in, and try again. "
+        f"({last_why})"
+    )
+
+
+def recover_mt5(reason: str = "") -> str | None:
+    """Force IPC teardown + reconnect (IPC timeout / None ticks)."""
+    from core.mt5_log import mt5_event
+    mt5_event("ipc", reason=reason or "forced recover")
+    with _lock:
+        _teardown()
+    return _ensure_mt5()
+
+
+def start_mt5_keepalive(interval: float = _KEEPALIVE_SEC) -> None:
+    """Background ping so the Python IPC does not go idle and die."""
+    global _keepalive_thread
+    if mt5 is None:
+        return
+    with _lock:
+        t = _keepalive_thread
+        if t is not None and t.is_alive():
+            return
+        _keepalive_stop.clear()
+
+        def _loop():
+            from core.mt5_log import mt5_log
+            mt5_log(f"keepalive started interval={interval}s")
+            backoff = interval
+            while True:
+                err = _ensure_mt5()
+                if err:
+                    backoff = min(30.0, max(interval, backoff * 1.5))
+                    mt5_log(f"keepalive reconnect pending: {err}", "warning")
+                else:
+                    backoff = interval
+                if _keepalive_stop.wait(backoff):
+                    mt5_log("keepalive stopped")
+                    return
+
+        _keepalive_thread = threading.Thread(
+            target=_loop, name="mt5-keepalive", daemon=True
+        )
+        _keepalive_thread.start()
+
+
+def stop_mt5_keepalive() -> None:
+    _keepalive_stop.set()
+
+
+def mt5_connection_status() -> dict:
+    ok, why = _health() if _initialized else (False, "not initialized")
+    code, text = _last_error()
+    trade_allowed = False
+    try:
+        term = mt5.terminal_info() if mt5 else None
+        trade_allowed = bool(term and getattr(term, "trade_allowed", False))
+    except Exception:
+        pass
+    return {
+        "ok": ok,
+        "initialized": _initialized,
+        "reason": why,
+        "trade_allowed": trade_allowed,
+        "last_error": (code, text),
+        "keepalive": bool(_keepalive_thread and _keepalive_thread.is_alive()),
+    }
+
+
+def _mt5_main_hwnd() -> int | None:
+    """Root HWND of the largest visible MT5 terminal window."""
+    pids = _mt5_pids()
+    best = 0
+    best_area = 0
+    try:
+        import win32gui
+        import win32con
+        import win32process
+
+        def _cb(hwnd, _):
+            nonlocal best, best_area
+            if not win32gui.IsWindowVisible(hwnd):
+                return True
+            if win32gui.IsIconic(hwnd):
+                return True
+            _tid, pid = win32process.GetWindowThreadProcessId(hwnd)
+            title = (win32gui.GetWindowText(hwnd) or "").lower()
+            by_pid = pid in pids
+            by_title = any(k in title for k in ("metatrader", "mt5", "metaquotes"))
+            if not by_pid and not by_title:
+                return True
             try:
-                if mt5.terminal_info() is not None:
-                    return None
+                left, top, right, bottom = win32gui.GetWindowRect(hwnd)
             except Exception:
-                pass
-            _initialized = False
+                return True
+            area = max(0, right - left) * max(0, bottom - top)
+            if area > best_area:
+                best_area = area
+                try:
+                    best = int(win32gui.GetAncestor(hwnd, win32con.GA_ROOT) or hwnd)
+                except Exception:
+                    best = int(hwnd)
+            return True
+
+        win32gui.EnumWindows(_cb, None)
+    except Exception as e:
+        _log(f"hwnd enum: {e}")
+    return best or None
+
+
+def algo_trading_on() -> bool:
+    err = _ensure_mt5()
+    if err or mt5 is None:
+        return False
+    try:
+        term = mt5.terminal_info()
+    except Exception:
+        return False
+    return bool(term and getattr(term, "trade_allowed", False))
+
+
+def ensure_algo_trading() -> tuple[bool, str]:
+    """
+    MT5 will reject order_send with 10027 unless the AutoTrading button is on.
+    If it is off, toggle it via WM_COMMAND on the terminal window.
+    """
+    if algo_trading_on():
+        return True, "on"
+    hwnd = _mt5_main_hwnd()
+    if not hwnd:
+        return False, (
+            "MT5 AutoTrading is OFF (error 10027). "
+            "Open MetaTrader 5 and click AutoTrading on the toolbar "
+            "(green play / Algo Trading) so it stays enabled."
+        )
+    try:
+        import win32gui
+        import win32con
+        from core.mt5_log import mt5_event
+        # Documented / community IDs for MT4/MT5 AutoTrading toggle
+        for cmd in (32851, 33048, 33020, 33135, 35462, 32990):
             try:
-                mt5.shutdown()
+                win32gui.PostMessage(hwnd, win32con.WM_COMMAND, cmd, 0)
             except Exception:
-                pass
-        try:
-            ok = bool(mt5.initialize())
-        except Exception as e:
-            return (
-                f"Could not connect to MetaTrader 5 ({e}). "
-                "Open the MT5 terminal and log in, then try again."
-            )
-        _initialized = ok
-        if not ok:
-            err = None
-            try:
-                err = mt5.last_error()
-            except Exception:
-                pass
-            return (
-                "Could not connect to MetaTrader 5. "
-                "Open the terminal, log in, and try again."
-                + (f" ({err})" if err else "")
-            )
-        return None
+                continue
+            time.sleep(0.3)
+            if algo_trading_on():
+                mt5_event("ok", status="autotrading_on", reason=f"WM_COMMAND {cmd}")
+                return True, f"enabled via toolbar command {cmd}"
+    except Exception as e:
+        _log(f"enable AutoTrading: {e}")
+    if algo_trading_on():
+        return True, "on"
+    from core.mt5_log import mt5_event
+    mt5_event(
+        "fail",
+        error="trade_allowed=False",
+        reason="AutoTrading disabled by client (10027)",
+    )
+    return False, (
+        "MT5 AutoTrading is OFF — Athena cannot place orders (10027). "
+        "In MetaTrader 5 click the AutoTrading button on the top toolbar "
+        "until it is green / enabled. Tools → Options → Expert Advisors "
+        "must also allow algorithmic trading."
+    )
 
 
 def _timeframe(name: str):
@@ -137,7 +424,13 @@ def _pair_currencies(symbol: str) -> list[str]:
 def _select(symbol: str) -> str | None:
     info = mt5.symbol_info(symbol)
     if info is None:
-        return f"Unknown symbol: {symbol}. Check the name in Market Watch."
+        code, text = _last_error()
+        if _is_ipc_error(code):
+            rec = recover_mt5(f"symbol_info {symbol} ({code}, {text})")
+            if rec is None:
+                info = mt5.symbol_info(symbol)
+        if info is None:
+            return f"Unknown symbol: {symbol}. Check the name in Market Watch."
     if not info.visible:
         if not mt5.symbol_select(symbol, True):
             return f"Could not select {symbol} in Market Watch."
@@ -153,7 +446,18 @@ def _copy_rates(symbol: str, tf) -> np.ndarray | None:
         return hit[1]
     rates = mt5.copy_rates_from_pos(symbol, tf, 0, _BARS)
     if rates is None or len(rates) < 30:
-        return None
+        code, text = _last_error()
+        if _is_ipc_error(code):
+            from core.mt5_log import mt5_event
+            mt5_event(
+                "ipc",
+                reason=f"copy_rates {symbol} last_error=({code}, {text})",
+            )
+            rec = recover_mt5(f"copy_rates {symbol} ({code}, {text})")
+            if rec is None:
+                rates = mt5.copy_rates_from_pos(symbol, tf, 0, _BARS)
+        if rates is None or len(rates) < 30:
+            return None
     arr = np.array(rates)
     _rates_cache[key] = (now, arr)
     return arr
@@ -380,13 +684,15 @@ def _ta_report(symbol: str, tf_name: str, rates: np.ndarray) -> str:
         "SELL": f"Bias is SELL on {symbol} {tf_name.upper()}.",
         "WAIT": f"Bias is WAIT on {symbol} {tf_name.upper()} - do not enter a fresh buy or sell here.",
     }[bias]
+    reasons = "; ".join(m["reasons"])
     return "\n".join([
         f"BIAS {bias}",
         (
             f"SAY ALOUD: {speak} "
+            "Briefly name the two or three strongest REASONS. "
             "You MUST say BUY, SELL, or WAIT in your spoken reply. "
-            "Do NOT say you cannot give trading advice. Do NOT refuse. "
-            "You are not placing an order."
+            "This is analysis only — you are not placing an order. "
+            "Do NOT say you cannot give trading advice. Do NOT refuse."
         ),
         f"SYMBOL {symbol}  TF {m['tf']}",
         f"PRICE {_fmt(m['close'], d)}",
@@ -399,7 +705,7 @@ def _ta_report(symbol: str, tf_name: str, rates: np.ndarray) -> str:
         f"S/R  support {_fmt(m['support'], d)}  resistance {_fmt(m['resistance'], d)}",
         f"CANDLE {m['candle']}",
         f"SIGNAL {m['signal']}  confidence {m['conf']:.2f}",
-        "REASONS: " + "; ".join(m["reasons"]),
+        "REASONS: " + reasons,
     ])
 
 
